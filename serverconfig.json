@@ -1,0 +1,7 @@
+{
+  "ServerName": "My Motor Town Server",
+  "MaxPlayers": 8,
+  "Admins": ["76561198000000000"],
+  "Password": "",
+  "Port": 27015
+}
