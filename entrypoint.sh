@@ -1,67 +1,56 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 trap 'echo "❌ Script failed at line $LINENO"; exit 1' ERR
 
-echo "🚀 Starting Motor Town Dedicated Server..."
+echo "🚀 Motor Town Dedicated Server Entrypoint"
 
 # Load environment variables
-export $(grep -v '^#' /motortown/.env | xargs)
-
-CONFIG_PATH="/motortown/config/serverconfig.json"
-EXE_PATH="/motortown/server/$EXE_NAME"
-
-# Optional SteamCMD update
-if [ "$USE_STEAMCMD" = "true" ]; then
-  echo "🔐 Running SteamCMD for auxiliary updates..."
-  /steamcmd/steamcmd.sh +login "$STEAM_USERNAME" "$STEAM_PASSWORD" \
-    +force_install_dir /motortown/server \
-    +app_update 1376480 validate \
-    +quit
+if [ ! -f ".env" ]; then
+  echo "❌ .env file not found"
+  exit 1
 fi
+source .env
 
 # Validate executable
-if [ ! -f "$EXE_PATH" ]; then
-  echo "❌ Server executable not found at $EXE_PATH"
+if [ ! -f "$EXE_NAME" ]; then
+  echo "❌ Executable not found: $EXE_NAME"
   exit 1
 fi
 
-# Parse config JSON
-if [ -f "$CONFIG_PATH" ]; then
-  echo "📖 Loading server config..."
-  MAP=$(jq -r '.WorldSettings.Map // env.MAP_NAME' "$CONFIG_PATH")
-  USE_PERF=$(jq -r '.Performance.UsePerfThreads // env.USE_PERF_THREADS' "$CONFIG_PATH")
-  HEADLESS=$(jq -r '.Performance.Headless // env.HEADLESS' "$CONFIG_PATH")
-  ENABLE_LOG=$(jq -r '.Logging.EnableLog // env.ENABLE_LOG' "$CONFIG_PATH")
-else
-  echo "⚠️ Config file not found, falling back to .env"
-  MAP="$MAP_NAME"
-  USE_PERF="$USE_PERF_THREADS"
-  HEADLESS="$HEADLESS"
-  ENABLE_LOG="$ENABLE_LOG"
+# Validate config
+CONFIG_PATH="./config/serverconfig.json"
+if ! jq empty "$CONFIG_PATH"; then
+  echo "❌ Invalid JSON in $CONFIG_PATH"
+  exit 1
 fi
 
-# Verbose output
-echo "🧩 Map: $MAP"
-echo "🧩 UsePerfThreads: $USE_PERF"
-echo "🧩 Headless: $HEADLESS"
-echo "🧩 EnableLog: $ENABLE_LOG"
+# Validate required keys in config
+REQUIRED_KEYS=(
+  '.Server.Name' '.Server.MaxPlayers' '.WorldSettings.Map'
+  '.Performance.UsePerfThreads' '.Logging.EnableLog'
+)
+for KEY in "${REQUIRED_KEYS[@]}"; do
+  VALUE=$(jq -r "$KEY // empty" "$CONFIG_PATH")
+  if [ -z "$VALUE" ]; then
+    echo "❌ Missing key: $KEY in config"
+    exit 1
+  fi
+done
 
-# Optional backup
-if [ "$ENABLE_BACKUP" = "true" ] && [ -f /motortown/backup/backup.sh ]; then
-  echo "📦 Running backup..."
-  bash /motortown/backup/backup.sh
-fi
+# Prepare log path
+LOG_PATH="./logs/server.log"
+mkdir -p "$(dirname "$LOG_PATH")"
+touch "$LOG_PATH"
 
 # Build launch command
-CMD="$EXE_PATH $MAP?listen? -server"
-[ "$ENABLE_LOG" = "true" ] && CMD="$CMD -log"
-[ "$USE_PERF" = "true" ] && CMD="$CMD -useperfthreads"
-[ "$HEADLESS" = "true" ] && CMD="$CMD -nographics"
+CMD="$EXE_NAME -batchmode -nographics -map $MAP_NAME -port1 $PORT_1 -port2 $PORT_2"
 
-# Resilient launch loop
-while true; do
-  echo "🧨 Launching: wine $CMD"
-  xvfb-run wine $CMD
-  echo "⚠️ Server exited. Restarting in 10 seconds..."
-  sleep 10
-done
+# Optional flags
+[ "${USE_PERF_THREADS:-false}" = "true" ] && CMD="$CMD -usePerfThreads"
+[ "${ENABLE_LOG:-false}" = "true" ] && CMD="$CMD -logFile $LOG_PATH"
+[ "${HEADLESS:-false}" = "true" ] && CMD="$CMD -headless"
+
+echo "🧠 Launch command: $CMD"
+echo "📄 Logging to: $LOG_PATH"
+
+# Run server with virtual framebuffer and capture all
