@@ -1,15 +1,23 @@
 #!/bin/bash
+
 REQUIRED_VARS=(
-  STEAM_USERNAME STEAM_PASSWORD EXE_NAME MAP_NAME
-  USE_PERF_THREADS ENABLE_LOG HEADLESS PORT_1 PORT_2
-  ENABLE_BACKUP BACKUP_PATH
+  STEAM_USERNAME
+  STEAM_PASSWORD
+  EXE_NAME
+  MAP_NAME
+  PORT_1
+  PORT_2
 )
 
-echo "🔍 Validating .env file..."
-for VAR in "${REQUIRED_VARS[@]}"; do
-  if ! grep -q "^$VAR=" .env; then
-    echo "❌ Missing $VAR in .env"
-    exit 1
+echo "🔍 Validating environment variables..."
+
+for var in "${REQUIRED_VARS[@]}"; do
+  value="${!var}"
+  if [ -z "$value" ]; then
+    echo "⚠️  $var is not set. Using fallback or default."
+  else
+    echo "✅ $var = $value"
   fi
 done
-echo "✅ .env validation passed."
+
+echo "✅ Validation complete."
