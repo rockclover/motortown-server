@@ -1,10 +1,11 @@
 # Motor Town Dedicated Server (Dockerized)
 
-This repo lets you run the Motor Town: Behind The Wheel dedicated server on Linux using Docker and Wine.
+Run Motor Town server on Linux using Docker + Wine.
 
 ## 🚀 Quick Start
 
-1. Drop your `MotorTownServer-Win64-Shipping.exe` into the `server/` folder.
-2. Build the image:
+1. Drop your `.exe` into `server/`
+2. Customize `.env` as needed
+3. Build and run:
    ```bash
-   docker-compose build
+   docker-compose up -d
