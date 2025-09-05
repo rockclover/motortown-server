@@ -1,0 +1,32 @@
+name: Validate Config Files
+
+on:
+  push:
+    paths:
+      - '.env'
+      - 'config/serverconfig.json'
+  pull_request:
+    paths:
+      - '.env'
+      - 'config/serverconfig.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Validate .env file
+      run: |
+        required_keys=("EXE_NAME" "MAP_NAME" "PORT_1" "PORT_2")
+        for key in "${required_keys[@]}"; do
+          grep -q "^$key=" .env || { echo "❌ Missing $key in .env"; exit 1; }
+        done
+        echo "✅ .env file looks good"
+
+    - name: Validate serverconfig.json
+      run: |
+        jq empty config/serverconfig.json
+        echo "✅ serverconfig.json is valid JSON"
