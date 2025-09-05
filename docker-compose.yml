@@ -1,16 +1,21 @@
 version: '3.8'
 
 services:
-  motortown:
-    build: .
+  motortown-server:
     container_name: motortown-server
-    env_file:
-      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORT_1}:${PORT_1}/udp"
+      - "${PORT_2}:${PORT_2}/udp"
     volumes:
       - ./server:/motortown/server
       - ./config:/motortown/config
       - ./backup:/motortown/backup
-    ports:
-      - "${PORT_1}:${PORT_1}/udp"
-      - "${PORT_2}:${PORT_2}/udp"
-    restart: unless-stopped
+      - ./logs:/motortown/logs
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
