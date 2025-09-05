@@ -10,7 +10,7 @@ export $(grep -v '^#' /motortown/.env | xargs)
 CONFIG_PATH="/motortown/config/serverconfig.json"
 EXE_PATH="/motortown/server/$EXE_NAME"
 
-# Optional SteamCMD update for auxiliary files
+# Optional SteamCMD update
 if [ "$USE_STEAMCMD" = "true" ]; then
   echo "🔐 Running SteamCMD for auxiliary updates..."
   /steamcmd/steamcmd.sh +login "$STEAM_USERNAME" "$STEAM_PASSWORD" \
@@ -40,7 +40,7 @@ else
   ENABLE_LOG="$ENABLE_LOG"
 fi
 
-# Verbose output of flags
+# Verbose output
 echo "🧩 Map: $MAP"
 echo "🧩 UsePerfThreads: $USE_PERF"
 echo "🧩 Headless: $HEADLESS"
