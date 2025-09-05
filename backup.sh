@@ -1,5 +1,7 @@
 #!/bin/bash
-source .env
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
-zip -r "${BACKUP_PATH}/motortown_backup_${TIMESTAMP}.zip" "${SERVER_DATA_PATH}"
-find "${BACKUP_PATH}" -type f -name "*.zip" -mtime +7 -exec rm {} \;
+
+echo "🗂️ Backing up server files..."
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+mkdir -p /motortown/backup/archive
+cp -r /motortown/server "/motortown/backup/archive/server_backup_$TIMESTAMP"
+echo "✅ Backup complete."
