@@ -1,13 +1,23 @@
 #!/bin/bash
 set -e
+trap 'echo "❌ Script failed at line $LINENO"; exit 1' ERR
 
 echo "🚀 Starting Motor Town Dedicated Server..."
 
 # Load environment variables
-source /motortown/.env
+export $(grep -v '^#' /motortown/.env | xargs)
 
 CONFIG_PATH="/motortown/config/serverconfig.json"
 EXE_PATH="/motortown/server/$EXE_NAME"
+
+# Optional SteamCMD update for auxiliary files
+if [ "$USE_STEAMCMD" = "true" ]; then
+  echo "🔐 Running SteamCMD for auxiliary updates..."
+  /steamcmd/steamcmd.sh +login "$STEAM_USERNAME" "$STEAM_PASSWORD" \
+    +force_install_dir /motortown/server \
+    +app_update 1376480 validate \
+    +quit
+fi
 
 # Validate executable
 if [ ! -f "$EXE_PATH" ]; then
@@ -30,6 +40,12 @@ else
   ENABLE_LOG="$ENABLE_LOG"
 fi
 
+# Verbose output of flags
+echo "🧩 Map: $MAP"
+echo "🧩 UsePerfThreads: $USE_PERF"
+echo "🧩 Headless: $HEADLESS"
+echo "🧩 EnableLog: $ENABLE_LOG"
+
 # Optional backup
 if [ "$ENABLE_BACKUP" = "true" ] && [ -f /motortown/backup/backup.sh ]; then
   echo "📦 Running backup..."
@@ -42,5 +58,10 @@ CMD="$EXE_PATH $MAP?listen? -server"
 [ "$USE_PERF" = "true" ] && CMD="$CMD -useperfthreads"
 [ "$HEADLESS" = "true" ] && CMD="$CMD -nographics"
 
-echo "🧨 Launching: wine $CMD"
-xvfb-run wine $CMD
+# Resilient launch loop
+while true; do
+  echo "🧨 Launching: wine $CMD"
+  xvfb-run wine $CMD
+  echo "⚠️ Server exited. Restarting in 10 seconds..."
+  sleep 10
+done
