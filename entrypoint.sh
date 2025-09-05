@@ -1,56 +1,33 @@
 #!/bin/bash
-set -euo pipefail
-trap 'echo "❌ Script failed at line $LINENO"; exit 1' ERR
+set -e
 
-echo "🚀 Motor Town Dedicated Server Entrypoint"
+# Optional .env sourcing
+[ -f /mnt/server/.env ] && source /mnt/server/.env
 
-# Load environment variables
-if [ ! -f ".env" ]; then
-  echo "❌ .env file not found"
-  exit 1
-fi
-source .env
+# Fallbacks
+STEAM_USERNAME="${STEAM_USERNAME:-your_steam_username}"
+STEAM_PASSWORD="${STEAM_PASSWORD:-your_steam_password}"
+EXE_NAME="${EXE_NAME:-MotorTownServer-Win64-Shipping.exe}"
+MAP_NAME="${MAP_NAME:-Jeju_World}"
+PORT_1="${PORT_1:-27015}"
+PORT_2="${PORT_2:-27016}"
+USE_PERF_THREADS="${USE_PERF_THREADS:-true}"
+ENABLE_LOG="${ENABLE_LOG:-true}"
+HEADLESS="${HEADLESS:-false}"
 
-# Validate executable
-if [ ! -f "$EXE_NAME" ]; then
-  echo "❌ Executable not found: $EXE_NAME"
-  exit 1
-fi
+echo "🚀 Launching Motor Town Dedicated Server"
+echo "🧾 Executable: $EXE_NAME"
+echo "🗺️ Map: $MAP_NAME"
+echo "📡 Ports: $PORT_1 / $PORT_2"
+echo "👤 Steam: $STEAM_USERNAME"
+echo "⚙️ Flags: HEADLESS=$HEADLESS, LOG=$ENABLE_LOG, PERF=$USE_PERF_THREADS"
 
-# Validate config
-CONFIG_PATH="./config/serverconfig.json"
-if ! jq empty "$CONFIG_PATH"; then
-  echo "❌ Invalid JSON in $CONFIG_PATH"
-  exit 1
-fi
-
-# Validate required keys in config
-REQUIRED_KEYS=(
-  '.Server.Name' '.Server.MaxPlayers' '.WorldSettings.Map'
-  '.Performance.UsePerfThreads' '.Logging.EnableLog'
-)
-for KEY in "${REQUIRED_KEYS[@]}"; do
-  VALUE=$(jq -r "$KEY // empty" "$CONFIG_PATH")
-  if [ -z "$VALUE" ]; then
-    echo "❌ Missing key: $KEY in config"
-    exit 1
-  fi
-done
-
-# Prepare log path
-LOG_PATH="./logs/server.log"
-mkdir -p "$(dirname "$LOG_PATH")"
-touch "$LOG_PATH"
-
-# Build launch command
-CMD="$EXE_NAME -batchmode -nographics -map $MAP_NAME -port1 $PORT_1 -port2 $PORT_2"
-
-# Optional flags
-[ "${USE_PERF_THREADS:-false}" = "true" ] && CMD="$CMD -usePerfThreads"
-[ "${ENABLE_LOG:-false}" = "true" ] && CMD="$CMD -logFile $LOG_PATH"
-[ "${HEADLESS:-false}" = "true" ] && CMD="$CMD -headless"
-
-echo "🧠 Launch command: $CMD"
-echo "📄 Logging to: $LOG_PATH"
-
-# Run server with virtual framebuffer and capture all
+# Launch logic (example)
+wine64 "/mnt/server/$EXE_NAME" \
+  -log \
+  -map=$MAP_NAME \
+  -port=$PORT_1 \
+  -queryport=$PORT_2 \
+  -USE_PERF_THREADS=$USE_PERF_THREADS \
+  -ENABLE_LOG=$ENABLE_LOG \
+  -HEADLESS=$HEADLESS
