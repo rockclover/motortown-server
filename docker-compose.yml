@@ -4,9 +4,13 @@ services:
   motortown:
     build: .
     container_name: motortown-server
+    env_file:
+      - .env
     volumes:
       - ./server:/motortown/server
+      - ./config:/motortown/config
+      - ./backup:/motortown/backup
     ports:
-      - "27015:27015/udp"
-      - "27016:27016/udp"
+      - "${PORT_1}:${PORT_1}/udp"
+      - "${PORT_2}:${PORT_2}/udp"
     restart: unless-stopped
