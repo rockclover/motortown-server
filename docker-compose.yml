@@ -1,21 +1,22 @@
 version: '3.8'
 
 services:
-  motortown-server:
-    container_name: motortown-server
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
+  motor-town-server:
+    build: .
+    container_name: motor-town-server
     ports:
-      - "${PORT_1}:${PORT_1}/udp"
-      - "${PORT_2}:${PORT_2}/udp"
+      - "${PORT_1:-27015}:${PORT_1:-27015}/udp"
+      - "${PORT_2:-27016}:${PORT_2:-27016}/udp"
+    environment:
+      STEAM_USERNAME: "${STEAM_USERNAME:-your_steam_username}"
+      STEAM_PASSWORD: "${STEAM_PASSWORD:-your_steam_password}"
+      EXE_NAME: "${EXE_NAME:-MotorTownServer-Win64-Shipping.exe}"
+      MAP_NAME: "${MAP_NAME:-Jeju_World}"
+      PORT_1: "${PORT_1:-27015}"
+      PORT_2: "${PORT_2:-27016}"
+      USE_PERF_THREADS: "${USE_PERF_THREADS:-true}"
+      ENABLE_LOG: "${ENABLE_LOG:-true}"
+      HEADLESS: "${HEADLESS:-false}"
     volumes:
-      - ./server:/motortown/server
-      - ./config:/motortown/config
-      - ./backup:/motortown/backup
-      - ./logs:/motortown/logs
-    env_file:
-      - .env
-    stdin_open: true
-    tty: true
+      - ./server:/mnt/server
+    entrypoint: ["/mnt/server/entrypoint.sh"]
