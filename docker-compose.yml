@@ -2,21 +2,11 @@ version: '3.8'
 
 services:
   motortown:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: motortown-server
-    ports:
-      - "${GAME_PORT}:${GAME_PORT}/udp"
-      - "${QUERY_PORT}:${QUERY_PORT}/udp"
     volumes:
-      - ${SERVER_DATA_PATH}:/serverdata/serverfiles
-      - ${LOG_PATH}:/serverdata/logs
-      - ${BACKUP_PATH}:/serverdata/backups
-    environment:
-      - STEAM_USERNAME=${STEAM_USERNAME}
-      - STEAM_PASSWORD=${STEAM_PASSWORD}
-      - GAME_ID=${GAME_ID}
-      - BETABRANCH=${BETABRANCH}
-      - BETAPASS=${BETAPASS}
+      - ./server:/motortown/server
+    ports:
+      - "27015:27015/udp"
+      - "27016:27016/udp"
     restart: unless-stopped
