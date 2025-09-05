@@ -1,7 +1,55 @@
 {
-  "ServerName": "My Motor Town Server",
-  "MaxPlayers": 8,
-  "Admins": ["76561198000000000"],
-  "Password": "",
-  "Port": 27015
+  "Server": {
+    "Name": "MotorTownDocker",
+    "MaxPlayers": 16,
+    "WelcomeMessage": "Welcome to Motor Town! Drive safe, race hard.",
+    "AdminIDs": [
+      "76561198000000001",
+      "76561198000000002"
+    ],
+    "AllowJoinWithCompanyVehicles": true,
+    "AllowCompanyAIDrivers": true,
+    "EnableEconomy": true
+  },
+  "WorldSettings": {
+    "Map": "Jeju_World",
+    "TimeOfDay": "Morning",
+    "Weather": "Clear",
+    "TrafficDensity": "Medium",
+    "EnableNPCs": true
+  },
+  "Performance": {
+    "UsePerfThreads": true,
+    "Headless": false
+  },
+  "Logging": {
+    "EnableLog": true,
+    "LogPath": "/motortown/logs/server.log"
+  },
+  "Backup": {
+    "EnableBackup": true,
+    "BackupPath": "/motortown/backup/archive"
+  },
+  "Company": {
+    "EnableCompanySystem": true,
+    "DefaultCompanyFunds": 10000,
+    "EnableHiring": true,
+    "EnableCargoContracts": true,
+    "EnableVehicleSharing": true
+  },
+  "VehicleAI": {
+    "EnableAIDrivers": true,
+    "MaxAIDrivers": 5,
+    "AllowAutoDispatch": true,
+    "VehicleTypes": [
+      "Truck",
+      "Van",
+      "Taxi"
+    ]
+  },
+  "Items": {
+    "EnableItemTrading": true,
+    "EnableItemSpawning": false,
+    "ItemSpawnRate": "Normal"
+  }
 }
